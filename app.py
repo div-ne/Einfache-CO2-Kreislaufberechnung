@@ -8,7 +8,7 @@ from scipy.optimize import brentq
 st.set_page_config(page_title="CO2 Kreislaufberechnung", layout="wide", page_icon="logo.png")
 
 APP_TITLE = "CO2 Kreislaufberechnung"
-APP_VERSION = "0.9.3V"
+APP_VERSION = "0.4.0V"
 FLUID = "CO2"
 
 
@@ -408,9 +408,11 @@ with col1:
 
     row3col1, row3col2 = st.columns(2)
     with row3col1:
-        pgc_mode = st.selectbox("Gaskühlerdruck", ["Automatisch", "Manuell"])
+        crit = cp.PropsSI("TCRIT", FLUID)
+    pgc_disabled = tgc < crit
+    pgc_mode = st.selectbox("Gaskühlerdruck", ["Automatisch", "Manuell"], disabled=pgc_disabled)
     with row3col2:
-        pgc = st.number_input("Gaskühlerdruck [bar]", value=90.0, disabled=(pgc_mode == "Automatisch"))
+        pgc = st.number_input("Gaskühlerdruck [bar]", value=90.0, disabled=pgc_disabled or (pgc_mode == "Automatisch"))
 
     row4col1, row4col2 = st.columns(2)
     with row4col1:
@@ -483,6 +485,11 @@ with col2:
         else:
             data = st.session_state.co2_result
             st.dataframe(data["results"], use_container_width=True, hide_index=True)
+            st.subheader("Kreislaufpunkte")
+            st.dataframe(data["points"], use_container_width=True, hide_index=True)
+            if ifpipes == "Ja":
+                st.subheader("Rohrleitungsdimensionierung")
+                st.dataframe(data["pipes"], use_container_width=True, hide_index=True)
             st.download_button(
                 "CSV herunterladen",
                 data=data["csv"],
@@ -490,11 +497,6 @@ with col2:
                 mime="text/csv",
                 use_container_width=True,
             )
-            st.subheader("Kreislaufpunkte")
-            st.dataframe(data["points"], use_container_width=True, hide_index=True)
-            if ifpipes == "Ja":
-                st.subheader("Rohrleitungsdimensionierung")
-                st.dataframe(data["pipes"], use_container_width=True, hide_index=True)
             if data["errors"]:
                 st.warning("\n".join(data["errors"]))
 
