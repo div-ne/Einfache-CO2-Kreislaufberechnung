@@ -1,4 +1,4 @@
-# CO2 Kreislaufberechnung
+# Einfache CO2 Kreislaufberechnung
 
 [**Zur Live-Anwendung**](https://co2berechnung.streamlit.app/)
 
